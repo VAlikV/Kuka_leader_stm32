@@ -24,6 +24,9 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "dynamixel_stm32_mx28_p1.h"
+#include <ctype.h>
+#include <errno.h>
+#include "usbd_cdc_if.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -320,6 +323,8 @@ int parse_angles(const char *s, int32_t *out)
 
 void read_current_state()
 {
+	char msg[96];
+
 	for(uint8_t i = 0; i < 8; ++i)
 	{
 		dynamixel_read_present_position(&huart1, ids[i], &current_positions[i]);
@@ -379,7 +384,7 @@ void set_home_position()
 			{
 				dynamixel_set_torque_enable(&huart1, ids[i], 1);
 				osDelay(10);
-				dynamixel_set_goal_position(&huart1, ids[i], &home_positions);
+				dynamixel_set_goal_position(&huart1, ids[i], home_positions[i]);
 			}
 
 			osDelay(2000);
@@ -387,6 +392,7 @@ void set_home_position()
 			for(uint8_t i = 0; i < 8; ++i)
 			{
 				dynamixel_set_torque_enable(&huart1, ids[i], 0);
+				osDelay(10);
 			}
 
 		}
@@ -408,7 +414,6 @@ void StartDefaultTask(void const * argument)
   MX_USB_DEVICE_Init();
   /* USER CODE BEGIN 5 */
   int available = dynamixel_ping(&huart1, 1);
-  char msg[96];
 
   last_tick_time = HAL_GetTick();
 
