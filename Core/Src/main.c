@@ -68,6 +68,9 @@ volatile uint32_t usb_cmd_len;
 int32_t current_positions[8];
 int32_t home_positions[8];
 uint8_t ids[] = {1, 2, 3, 4, 5, 6, 7, 8};
+uint8_t torque_limits[] = {16, 16, 8, 16, 8, 16, 0, 0};
+uint8_t p_gains[] = {0, 0, 0, 0, 0, 0, 0, 0};
+uint8_t d_gains[] = {4, 4, 4, 4, 4, 4, 1, 1};
 
 uint32_t last_tick_time = 0;
 uint32_t tick_time = 0;
@@ -382,17 +385,35 @@ void set_home_position()
 		{
 			for(uint8_t i = 0; i < 8; ++i)
 			{
+				dynamixel_set_torque_enable(&huart1, ids[i], 0);
+				osDelay(15);
+				dynamixel_set_p_gain(&huart1, ids[i], 128);
+				osDelay(15);
+				dynamixel_set_d_gain(&huart1, ids[i], 0);
+				osDelay(15);
 				dynamixel_set_torque_enable(&huart1, ids[i], 1);
-				osDelay(10);
+				osDelay(15);
 				dynamixel_set_goal_position(&huart1, ids[i], home_positions[i]);
 			}
 
 			osDelay(2000);
 
+//			for(uint8_t i = 0; i < 6; ++i)
+//			{
+//				dynamixel_set_torque_enable(&huart1, ids[i], 0);
+//				osDelay(15);
+//				dynamixel_set_p_gain(&huart1, ids[i], 0);
+//				osDelay(15);
+//				dynamixel_set_torque_enable(&huart1, ids[i], 1);
+//				osDelay(15);
+//				dynamixel_set_goal_position(&huart1, ids[i], home_positions[i]);
+//				osDelay(15);
+//			}
+
 			for(uint8_t i = 0; i < 8; ++i)
 			{
 				dynamixel_set_torque_enable(&huart1, ids[i], 0);
-				osDelay(10);
+				osDelay(15);
 			}
 
 		}
