@@ -2,9 +2,9 @@
 #include <string.h>
 
 /*
- * Set to 1 if you want WRITE commands to wait for a Status Packet.
- * For first bring-up, 0 is safer because it avoids blocking on every WRITE
- * if Status Return Level is configured to not respond to writes.
+ * Match the startup configuration in main.c: Status Return Level = 1.
+ * WRITE has no reply; READ still waits for and validates its Status Packet.
+ * Set to 1 only when unicast WRITE replies are enabled on the motors (level 2).
  */
 #define DXL_WAIT_STATUS_AFTER_WRITE  0
 
