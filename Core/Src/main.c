@@ -367,6 +367,25 @@ void usb_print(const char *msg)
 	}
 }
 
+/* This marker must not be skipped just because telemetry is still in flight.
+ * Static storage remains valid until the asynchronous USB transfer finishes.
+ */
+void usb_send_move_done(void)
+{
+    static const char message[] = "MOVE_DONE\r\n";
+    uint32_t started = HAL_GetTick();
+
+    if (!usb_cdc_connected)
+        return;
+
+    while (CDC_Transmit_FS((uint8_t *)message, sizeof(message) - 1) == USBD_BUSY)
+    {
+        if (HAL_GetTick() - started >= 100U)
+            return; /* The host will time out instead of assuming completion. */
+        osDelay(1);
+    }
+}
+
 int parse_angles(const char *s, int32_t *out)
 {
 	while (*s && *s != '[') s++;
@@ -529,6 +548,7 @@ void set_home_position()
 		if (parse_angles(cmd, home_positions) == PARSE_OK)
 		{
 			move_motors_linear(home_positions);
+			usb_send_move_done();
 		}
 	}
 
